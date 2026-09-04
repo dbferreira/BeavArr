@@ -298,8 +298,8 @@ function getCategoryConfig(category: Category, country: CountryCode, dateRange: 
 	const today = new Date().toISOString().split('T')[0];
 	const tvDateParams: Record<string, string> = rangeStart
 		? {
-				'first_air_date.gte': rangeStart,
-				'first_air_date.lte': today
+				'air_date.gte': rangeStart,
+				'air_date.lte': today
 			}
 		: {};
 	const movieDateParams: Record<string, string> = rangeStart
@@ -318,7 +318,9 @@ function getCategoryConfig(category: Category, country: CountryCode, dateRange: 
 					with_original_language: 'en',
 					include_adult: 'false',
 					sort_by: 'popularity.desc',
-					...(rangeStart ? tvDateParams : { 'first_air_date.gte': getDateYearsAgo(3) }),
+					...(rangeStart
+						? tvDateParams
+						: { 'air_date.gte': getDateYearsAgo(3), 'air_date.lte': today }),
 					'vote_count.gte': '5'
 				}
 			};
@@ -403,7 +405,7 @@ function filterByDateRange(items: MediaItem[], dateRange: DateRangeFilter): Medi
 
 /**
  * Trending TV Series
- * sort_by=popularity.desc, first_air_date.gte=[Date 3 years ago], vote_count.gte=5
+ * sort_by=popularity.desc, air_date.gte=[Date 3 years ago], vote_count.gte=5
  */
 export async function getTrendingTV(country: CountryCode, dateRange: DateRangeFilter): Promise<MediaItem[]> {
 	const cacheKey = `trending_tv_${country}_${dateRange}`;

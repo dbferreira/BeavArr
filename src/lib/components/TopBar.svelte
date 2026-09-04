@@ -52,11 +52,6 @@
 				</p>
 			</div>
 		</div>
-
-		<div class="flex items-center gap-1.5">
-			<div class="h-2 w-2 rounded-full bg-[#10b981] animate-pulse" title="System Online"></div>
-			<span class="text-[11px] text-slate-400 font-mono">nzb360</span>
-		</div>
 	</div>
 
 	<!-- Country Navigation Pills -->
