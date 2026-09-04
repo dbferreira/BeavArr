@@ -1,6 +1,6 @@
 # BeavArr 🦫
 
-> *"Dam good media from outside the States."*
+> *"The best shows and films you're not watching."*
 
 **BeavArr** is a lightweight, high-performance media discovery frontend and companion for **Overseerr** and **Jellyseerr**. Tailored specifically for Android WebView tabs in the [nzb360](https://nzb360.com/) app, BeavArr surfaces acclaimed and trending English-language TV series and films from **Canada (`CA`)**, the **United Kingdom (`GB`)**, **Australia (`AU`)**, **New Zealand (`NZ`)**, **South Africa (`ZA`)**, **Ireland (`IE`)**, and the **Rest of the World (`ROW`)**.
 

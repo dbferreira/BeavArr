@@ -167,7 +167,7 @@
 	<!-- Footer with branding & app context -->
 	<footer class="mt-8 pt-6 pb-4 border-t border-white/[0.06] text-center text-xs text-slate-400 px-4">
 		<p class="font-medium text-slate-400">
-			🦫 <span class="text-white font-semibold">BeavArr</span> • Dam good media from outside the States.
+			🦫 <span class="text-white font-semibold">BeavArr</span> • The best shows and films you're not watching.
 		</p>
 		<p class="mt-1 text-[11px] text-slate-400">
 			Designed for nzb360 WebView • Powered by TMDb & Overseerr

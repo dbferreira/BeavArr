@@ -48,7 +48,7 @@
 					</span>
 				</div>
 				<p class="text-xs text-slate-400 font-medium truncate">
-					Dam good media from outside the States.
+					The best shows and films you're not watching.
 				</p>
 			</div>
 		</div>
