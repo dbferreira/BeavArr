@@ -1,12 +1,14 @@
 <script lang="ts">
-	import type { CountryCode } from '$lib/types';
+	import type { CountryCode, DateRangeFilter } from '$lib/types';
 
 	interface Props {
 		currentCountry: CountryCode;
+		currentRange: DateRangeFilter;
 		onSelectCountry: (country: CountryCode) => void;
+		onSelectRange: (range: DateRangeFilter) => void;
 	}
 
-	let { currentCountry, onSelectCountry }: Props = $props();
+	let { currentCountry, currentRange, onSelectCountry, onSelectRange }: Props = $props();
 
 	const countries: { code: CountryCode; name: string; flag: string }[] = [
 		{ code: 'ALL', name: 'All Non-US', flag: '🌐' },
@@ -17,6 +19,13 @@
 		{ code: 'ZA', name: 'South Africa', flag: '🇿🇦' },
 		{ code: 'IE', name: 'Ireland', flag: '🇮🇪' },
 		{ code: 'ROW', name: 'Rest of World', flag: '🌍' }
+	];
+
+	const dateRanges: { value: DateRangeFilter; label: string }[] = [
+		{ value: 'any', label: 'Any time' },
+		{ value: 'week', label: 'Last week' },
+		{ value: 'month', label: 'Last month' },
+		{ value: 'six_months', label: 'Last 6 months' }
 	];
 </script>
 
@@ -67,4 +76,24 @@
 			</button>
 		{/each}
 	</nav>
+
+	<!-- Date Range Filter -->
+	<div class="mt-3 flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1" aria-label="Date Range Filter">
+		<span class="text-[11px] uppercase tracking-wider font-bold text-slate-500 shrink-0 px-1">Released</span>
+		{#each dateRanges as range}
+			{@const isActive = currentRange === range.value}
+			<button
+				type="button"
+				onclick={() => onSelectRange(range.value)}
+				class="min-h-[40px] px-3 py-2 rounded-xl font-semibold text-xs transition-all duration-200 shrink-0 border select-none active:scale-95 {
+					isActive
+						? 'bg-[#e03131] text-white border-[#e03131] shadow-md shadow-[#e03131]/30 font-bold'
+						: 'bg-[#14171c] text-slate-300 border-white/[0.08] hover:bg-[#1c2128] hover:text-white'
+				}"
+				aria-pressed={isActive}
+			>
+				{range.label}
+			</button>
+		{/each}
+	</div>
 </header>

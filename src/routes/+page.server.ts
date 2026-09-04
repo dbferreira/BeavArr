@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import type { CountryCode, DiscoverResponse } from '$lib/types';
+import type { CountryCode, DateRangeFilter, DiscoverResponse } from '$lib/types';
 import {
 	getTrendingTV,
 	getCriticallyAcclaimedTV,
@@ -20,9 +20,13 @@ const VALID_COUNTRIES: Record<CountryCode, { name: string; flag: string }> = {
 	ROW: { name: 'Rest of World', flag: '🌍' }
 };
 
+const VALID_DATE_RANGES: DateRangeFilter[] = ['any', 'week', 'month', 'six_months'];
+
 export const load: PageServerLoad = async ({ url }): Promise<DiscoverResponse> => {
 	const requestedCountry = url.searchParams.get('country')?.toUpperCase() as CountryCode;
 	const country: CountryCode = (requestedCountry in VALID_COUNTRIES) ? requestedCountry : 'ALL';
+	const requestedRange = url.searchParams.get('range') as DateRangeFilter | null;
+	const dateRange: DateRangeFilter = requestedRange && VALID_DATE_RANGES.includes(requestedRange) ? requestedRange : 'any';
 
 	const countryInfo = {
 		code: country,
@@ -32,15 +36,16 @@ export const load: PageServerLoad = async ({ url }): Promise<DiscoverResponse> =
 
 	// Parallel fetch of discover rows
 	const [trendingTV, acclaimedTV, popularMovies, acclaimedMovies] = await Promise.all([
-		getTrendingTV(country),
-		getCriticallyAcclaimedTV(country),
-		getPopularMovies(country),
-		getCriticallyAcclaimedMovies(country)
+		getTrendingTV(country, dateRange),
+		getCriticallyAcclaimedTV(country, dateRange),
+		getPopularMovies(country, dateRange),
+		getCriticallyAcclaimedMovies(country, dateRange)
 	]);
 
 	return {
 		country,
 		countryInfo,
+		dateRange,
 		trendingTV,
 		acclaimedTV,
 		popularMovies,

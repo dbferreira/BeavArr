@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import type { CountryCode, MediaItem } from '$lib/types';
+	import type { CountryCode, DateRangeFilter, MediaItem } from '$lib/types';
 	import TopBar from '$lib/components/TopBar.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import DetailDrawer from '$lib/components/DetailDrawer.svelte';
@@ -15,6 +15,7 @@
 	type Category = 'trendingTV' | 'acclaimedTV' | 'popularMovies' | 'acclaimedMovies';
 
 	let currentCountry = $state(data.country);
+	let currentRange = $state(data.dateRange);
 	let trendingTV = $state<MediaItem[]>([...data.trendingTV]);
 	let acclaimedTV = $state<MediaItem[]>([...data.acclaimedTV]);
 	let popularMovies = $state<MediaItem[]>([...data.popularMovies]);
@@ -26,10 +27,11 @@
 		acclaimedMovies: false
 	});
 
-	// Reset the mutable lists when switching country.
+	// Reset the mutable lists when switching country or date range.
 	$effect(() => {
-		if (data.country !== currentCountry) {
+		if (data.country !== currentCountry || data.dateRange !== currentRange) {
 			currentCountry = data.country;
+			currentRange = data.dateRange;
 			trendingTV = [...data.trendingTV];
 			acclaimedTV = [...data.acclaimedTV];
 			popularMovies = [...data.popularMovies];
@@ -41,7 +43,9 @@
 		if (loadingMore[category]) return;
 		loadingMore[category] = true;
 		try {
-			const res = await fetch(`/api/more?category=${category}&country=${encodeURIComponent(data.country)}`);
+			const res = await fetch(
+				`/api/more?category=${category}&country=${encodeURIComponent(data.country)}&range=${encodeURIComponent(data.dateRange)}`
+			);
 			const payload = await res.json();
 			const newItems = (payload.items ?? []) as MediaItem[];
 
@@ -69,7 +73,15 @@
 	}
 
 	function handleSelectCountry(country: CountryCode) {
-		goto(`?country=${country}`, {
+		goto(`?country=${country}&range=${data.dateRange}`, {
+			keepFocus: true,
+			noScroll: true,
+			replaceState: true
+		});
+	}
+
+	function handleSelectRange(range: DateRangeFilter) {
+		goto(`?country=${data.country}&range=${range}`, {
 			keepFocus: true,
 			noScroll: true,
 			replaceState: true
@@ -94,7 +106,9 @@
 	<!-- Top Navigation Bar with Logo & Country Filter -->
 	<TopBar
 		currentCountry={data.country}
+		currentRange={data.dateRange}
 		onSelectCountry={handleSelectCountry}
+		onSelectRange={handleSelectRange}
 	/>
 
 	<!-- Config Guidance Banner (if TMDb or Overseerr need keys) -->
@@ -157,6 +171,9 @@
 		</p>
 		<p class="mt-1 text-[11px] text-slate-400">
 			Designed for nzb360 WebView • Powered by TMDb & Overseerr
+		</p>
+		<p class="mt-1 text-[11px] text-slate-400">
+			This product uses the TMDb API but is not endorsed or certified by TMDb.
 		</p>
 	</footer>
 

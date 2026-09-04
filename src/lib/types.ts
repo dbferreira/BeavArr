@@ -1,5 +1,7 @@
 export type CountryCode = 'ALL' | 'CA' | 'GB' | 'AU' | 'NZ' | 'ZA' | 'IE' | 'ROW';
 
+export type DateRangeFilter = 'any' | 'week' | 'month' | 'six_months';
+
 export interface CountryInfo {
 	code: CountryCode;
 	name: string;
@@ -42,6 +44,7 @@ export interface CarouselSection {
 export interface DiscoverResponse {
 	country: CountryCode;
 	countryInfo: CountryInfo;
+	dateRange: DateRangeFilter;
 	trendingTV: MediaItem[];
 	acclaimedTV: MediaItem[];
 	popularMovies: MediaItem[];

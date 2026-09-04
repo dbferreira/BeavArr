@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { LRUCache } from 'lru-cache';
-import type { CountryCode, MediaItem } from '$lib/types';
+import type { CountryCode, DateRangeFilter, MediaItem } from '$lib/types';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -28,6 +28,32 @@ function getDateYearsAgo(years: number): string {
 	const d = new Date();
 	d.setFullYear(d.getFullYear() - years);
 	return d.toISOString().split('T')[0];
+}
+
+function getDateDaysAgo(days: number): string {
+	const d = new Date();
+	d.setDate(d.getDate() - days);
+	return d.toISOString().split('T')[0];
+}
+
+function getDateMonthsAgo(months: number): string {
+	const d = new Date();
+	d.setMonth(d.getMonth() - months);
+	return d.toISOString().split('T')[0];
+}
+
+function getDateRangeStart(dateRange: DateRangeFilter): string | null {
+	switch (dateRange) {
+		case 'week':
+			return getDateDaysAgo(7);
+		case 'month':
+			return getDateMonthsAgo(1);
+		case 'six_months':
+			return getDateMonthsAgo(6);
+		case 'any':
+		default:
+			return null;
+	}
 }
 
 function getTmdbOriginCountryParam(country: CountryCode): string {
@@ -254,16 +280,30 @@ const PAGE_SIZE = 20;
 // Tracks the next TMDb discover page to fetch for each category + country so that
 // "load more" calls return a fresh, non-overlapping batch.
 const discoverCursors = new Map<string, number>();
-function cursorKey(category: Category, country: CountryCode): string {
-	return `${category}_${country}`;
+function cursorKey(category: Category, country: CountryCode, dateRange: DateRangeFilter): string {
+	return `${category}_${country}_${dateRange}`;
 }
 
-function getCategoryConfig(category: Category, country: CountryCode): {
+function getCategoryConfig(category: Category, country: CountryCode, dateRange: DateRangeFilter): {
 	endpoint: string;
 	mediaType: 'movie' | 'tv';
 	params: Record<string, string>;
 } {
 	const origin = getTmdbOriginCountryParam(country);
+	const rangeStart = getDateRangeStart(dateRange);
+	const today = new Date().toISOString().split('T')[0];
+	const tvDateParams: Record<string, string> = rangeStart
+		? {
+				'first_air_date.gte': rangeStart,
+				'first_air_date.lte': today
+			}
+		: {};
+	const movieDateParams: Record<string, string> = rangeStart
+		? {
+				'primary_release_date.gte': rangeStart,
+				'primary_release_date.lte': today
+			}
+		: {};
 	switch (category) {
 		case 'trendingTV':
 			return {
@@ -274,7 +314,7 @@ function getCategoryConfig(category: Category, country: CountryCode): {
 					with_original_language: 'en',
 					include_adult: 'false',
 					sort_by: 'popularity.desc',
-					'first_air_date.gte': getDateYearsAgo(3),
+					...(rangeStart ? tvDateParams : { 'first_air_date.gte': getDateYearsAgo(3) }),
 					'vote_count.gte': '5'
 				}
 			};
@@ -287,6 +327,7 @@ function getCategoryConfig(category: Category, country: CountryCode): {
 					with_original_language: 'en',
 					include_adult: 'false',
 					sort_by: 'vote_average.desc',
+					...tvDateParams,
 					'vote_count.gte': '50'
 				}
 			};
@@ -299,7 +340,7 @@ function getCategoryConfig(category: Category, country: CountryCode): {
 					with_original_language: 'en',
 					include_adult: 'false',
 					sort_by: 'popularity.desc',
-					'primary_release_date.gte': getDateYearsAgo(3),
+					...(rangeStart ? movieDateParams : { 'primary_release_date.gte': getDateYearsAgo(3) }),
 					'vote_count.gte': '5'
 				}
 			};
@@ -312,6 +353,7 @@ function getCategoryConfig(category: Category, country: CountryCode): {
 					with_original_language: 'en',
 					include_adult: 'false',
 					sort_by: 'vote_average.desc',
+					...movieDateParams,
 					'vote_count.gte': '50'
 				}
 			};
@@ -323,14 +365,14 @@ function getCategoryConfig(category: Category, country: CountryCode): {
  * in-memory discover cursor so subsequent calls return fresh pages. Returns up
  * to PAGE_SIZE items.
  */
-export async function fetchMoreItems(category: Category, country: CountryCode): Promise<MediaItem[]> {
+export async function fetchMoreItems(category: Category, country: CountryCode, dateRange: DateRangeFilter): Promise<MediaItem[]> {
 	const apiKey = env.TMDB_API_KEY?.trim();
 	if (!apiKey) {
 		return [];
 	}
 
-	const { endpoint, mediaType, params } = getCategoryConfig(category, country);
-	const key = cursorKey(category, country);
+	const { endpoint, mediaType, params } = getCategoryConfig(category, country, dateRange);
+	const key = cursorKey(category, country, dateRange);
 	let page = discoverCursors.get(key) ?? 1;
 
 	const collected: RawTmdbItem[] = [];
@@ -348,23 +390,30 @@ export async function fetchMoreItems(category: Category, country: CountryCode): 
 	return enrichCertifications(items);
 }
 
+function filterByDateRange(items: MediaItem[], dateRange: DateRangeFilter): MediaItem[] {
+	const rangeStart = getDateRangeStart(dateRange);
+	if (!rangeStart) return items;
+	const today = new Date().toISOString().split('T')[0];
+	return items.filter((item) => item.releaseDate >= rangeStart && item.releaseDate <= today);
+}
+
 /**
  * Trending TV Series
  * sort_by=popularity.desc, first_air_date.gte=[Date 3 years ago], vote_count.gte=5
  */
-export async function getTrendingTV(country: CountryCode): Promise<MediaItem[]> {
-	const cacheKey = `trending_tv_${country}`;
+export async function getTrendingTV(country: CountryCode, dateRange: DateRangeFilter): Promise<MediaItem[]> {
+	const cacheKey = `trending_tv_${country}_${dateRange}`;
 	const cached = tmdbCache.get(cacheKey);
 	if (cached) return cached;
 
 	const apiKey = env.TMDB_API_KEY?.trim();
 	if (!apiKey) {
-		return getMockTrendingTV(country);
+		return filterByDateRange(getMockTrendingTV(country), dateRange);
 	}
 
-	const items = await fetchMoreItems('trendingTV', country);
+	const items = await fetchMoreItems('trendingTV', country, dateRange);
 	if (items.length === 0) {
-		return getMockTrendingTV(country);
+		return filterByDateRange(getMockTrendingTV(country), dateRange);
 	}
 
 	tmdbCache.set(cacheKey, items);
@@ -375,19 +424,19 @@ export async function getTrendingTV(country: CountryCode): Promise<MediaItem[]> 
  * Critically Acclaimed TV Series
  * sort_by=vote_average.desc, vote_count.gte=50
  */
-export async function getCriticallyAcclaimedTV(country: CountryCode): Promise<MediaItem[]> {
-	const cacheKey = `acclaimed_tv_${country}`;
+export async function getCriticallyAcclaimedTV(country: CountryCode, dateRange: DateRangeFilter): Promise<MediaItem[]> {
+	const cacheKey = `acclaimed_tv_${country}_${dateRange}`;
 	const cached = tmdbCache.get(cacheKey);
 	if (cached) return cached;
 
 	const apiKey = env.TMDB_API_KEY?.trim();
 	if (!apiKey) {
-		return getMockAcclaimedTV(country);
+		return filterByDateRange(getMockAcclaimedTV(country), dateRange);
 	}
 
-	const items = await fetchMoreItems('acclaimedTV', country);
+	const items = await fetchMoreItems('acclaimedTV', country, dateRange);
 	if (items.length === 0) {
-		return getMockAcclaimedTV(country);
+		return filterByDateRange(getMockAcclaimedTV(country), dateRange);
 	}
 
 	tmdbCache.set(cacheKey, items);
@@ -398,19 +447,19 @@ export async function getCriticallyAcclaimedTV(country: CountryCode): Promise<Me
  * Popular Movies
  * sort_by=popularity.desc, primary_release_date.gte=[Date 3 years ago], vote_count.gte=5
  */
-export async function getPopularMovies(country: CountryCode): Promise<MediaItem[]> {
-	const cacheKey = `popular_movies_${country}`;
+export async function getPopularMovies(country: CountryCode, dateRange: DateRangeFilter): Promise<MediaItem[]> {
+	const cacheKey = `popular_movies_${country}_${dateRange}`;
 	const cached = tmdbCache.get(cacheKey);
 	if (cached) return cached;
 
 	const apiKey = env.TMDB_API_KEY?.trim();
 	if (!apiKey) {
-		return getMockPopularMovies(country);
+		return filterByDateRange(getMockPopularMovies(country), dateRange);
 	}
 
-	const items = await fetchMoreItems('popularMovies', country);
+	const items = await fetchMoreItems('popularMovies', country, dateRange);
 	if (items.length === 0) {
-		return getMockPopularMovies(country);
+		return filterByDateRange(getMockPopularMovies(country), dateRange);
 	}
 
 	tmdbCache.set(cacheKey, items);
@@ -421,19 +470,19 @@ export async function getPopularMovies(country: CountryCode): Promise<MediaItem[
  * Critically Acclaimed Movies
  * sort_by=vote_average.desc, vote_count.gte=50
  */
-export async function getCriticallyAcclaimedMovies(country: CountryCode): Promise<MediaItem[]> {
-	const cacheKey = `acclaimed_movies_${country}`;
+export async function getCriticallyAcclaimedMovies(country: CountryCode, dateRange: DateRangeFilter): Promise<MediaItem[]> {
+	const cacheKey = `acclaimed_movies_${country}_${dateRange}`;
 	const cached = tmdbCache.get(cacheKey);
 	if (cached) return cached;
 
 	const apiKey = env.TMDB_API_KEY?.trim();
 	if (!apiKey) {
-		return getMockAcclaimedMovies(country);
+		return filterByDateRange(getMockAcclaimedMovies(country), dateRange);
 	}
 
-	const items = await fetchMoreItems('acclaimedMovies', country);
+	const items = await fetchMoreItems('acclaimedMovies', country, dateRange);
 	if (items.length === 0) {
-		return getMockAcclaimedMovies(country);
+		return filterByDateRange(getMockAcclaimedMovies(country), dateRange);
 	}
 
 	tmdbCache.set(cacheKey, items);

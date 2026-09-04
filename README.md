@@ -10,6 +10,7 @@
 
 - 🇨🇦 🇬🇧 🇦🇺 🇳🇿 🇿🇦 🇮🇪 🌍 **Non-US Focus:** Uncover regional gems across Canada, UK, Australia, New Zealand, South Africa, Ireland, and global international English cinema.
 - 🌐 **"All Non-US" Aggregate View:** A single filter that surfaces the best content from every supported region at once — no need to click through each country individually.
+- 🗓️ **Release Date Filters:** Slice the same feeds by release window with quick pills for `Any time`, `Last week`, `Last month`, and `Last 6 months`.
 - ⚡ **Overseerr & Jellyseerr Integration:** Real-time library availability check (`In Plex/Jellyfin`) and 1-click requests.
 - 📱 **Mobile & nzb360 Optimized:**
   - Deep AMOLED Black (`#0a0b0d`) theme.
@@ -150,6 +151,19 @@ beavarr/
             └── status/
                 └── +server.ts   # GET /api/status endpoint
 ```
+
+---
+
+## 📝 Credits & Attribution
+
+This project uses **The Movie Database (TMDb) API** for movie and TV metadata, posters, and artwork.
+
+> This product uses the TMDb API but is not endorsed or certified by TMDb.
+
+[<img src="https://www.themoviedb.org/assets/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg" alt="The Movie Database (TMDb) Logo" width="94">](https://www.themoviedb.org/)
+
+- [TMDb API Terms of Use](https://www.themoviedb.org/api-terms-of-use)
+- [TMDb Logos & Attribution](https://www.themoviedb.org/about/logos-attribution)
 
 ---
 
