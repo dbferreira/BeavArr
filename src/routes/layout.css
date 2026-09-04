@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-amoled: #0a0b0d;
+  --color-surface: #14171c;
+  --color-surface-subtle: #1c2128;
+  --color-surface-hover: #232934;
+  --color-maple-red: #e03131;
+  --color-maple-red-hover: #c92a2a;
+  --color-amber-star: #f59e0b;
+  --color-emerald-badge: #10b981;
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+html {
+  background-color: #0a0b0d;
+  color: #f1f3f5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0a0b0d;
+  min-height: 100vh;
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}

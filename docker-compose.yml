@@ -1,0 +1,19 @@
+services:
+  beavarr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beavarr
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - TMDB_API_KEY=${TMDB_API_KEY:-}
+      - OVERSEERR_URL=${OVERSEERR_URL:-}
+      - OVERSEERR_API_KEY=${OVERSEERR_API_KEY:-}
+    env_file:
+      - path: .env
+        required: false
