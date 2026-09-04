@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { LRUCache } from 'lru-cache';
 import type { CountryCode, DateRangeFilter, MediaItem } from '$lib/types';
+import { getImdbRatings } from './imdb';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -64,6 +65,13 @@ const countryCache = new LRUCache<string, string[]>({
 const certCache = new LRUCache<string, string>({
 	max: 5000,
 	ttl: 1000 * 60 * 60 * 24 // 24 hours
+});
+
+// Cached IMDb IDs keyed by "{mediaType}_{id}" so ratings can be joined to TMDb results.
+// An empty string is cached to represent a title without an IMDb ID.
+const imdbIdCache = new LRUCache<string, string>({
+	max: 5000,
+	ttl: 1000 * 60 * 60 * 24
 });
 
 function getDateYearsAgo(years: number): string {
@@ -298,6 +306,17 @@ async function getCertification(mediaType: 'movie' | 'tv', id: number): Promise<
 	return value;
 }
 
+async function getImdbId(mediaType: 'movie' | 'tv', id: number): Promise<string | null> {
+	const key = `${mediaType}_${id}`;
+	const cached = imdbIdCache.get(key);
+	if (cached !== undefined) return cached || null;
+
+	const data = await fetchTmdbDetail(`/${mediaType}/${id}/external_ids`);
+	const imdbId = typeof data?.imdb_id === 'string' ? data.imdb_id.trim() : '';
+	imdbIdCache.set(key, imdbId);
+	return imdbId || null;
+}
+
 /**
  * Attach a resolved age certification to each item, in parallel.
  */
@@ -307,6 +326,21 @@ async function enrichCertifications(items: MediaItem[]): Promise<MediaItem[]> {
 			...item,
 			certification: await getCertification(item.mediaType, item.id)
 		}))
+	);
+}
+
+async function enrichImdbRatings(items: MediaItem[]): Promise<MediaItem[]> {
+	const ratings = await getImdbRatings();
+	if (!ratings) return items;
+
+	return Promise.all(
+		items.map(async (item) => {
+			const imdbId = await getImdbId(item.mediaType, item.id);
+			const rating = imdbId ? ratings.get(imdbId) : undefined;
+			return rating
+				? { ...item, imdbRating: rating.averageRating, imdbVoteCount: rating.numVotes }
+				: item;
+		})
 	);
 }
 
@@ -443,7 +477,8 @@ export async function fetchMoreItems(category: Category, country: CountryCode, d
 	discoverCursors.set(key, page);
 
 	const items = collected.slice(0, PAGE_SIZE).map((item) => transformTmdbItem(item, mediaType, country));
-	return enrichCertifications(items);
+	const certifiedItems = await enrichCertifications(items);
+	return enrichImdbRatings(certifiedItems);
 }
 
 function filterByDateRange(items: MediaItem[], dateRange: DateRangeFilter): MediaItem[] {
@@ -555,8 +590,7 @@ export async function getExternalLinks(mediaType: 'movie' | 'tv', tmdbId: number
 		return { tmdbUrl, imdbUrl: null };
 	}
 
-	const data = await fetchTmdbDetail(`/${mediaType}/${tmdbId}/external_ids`);
-	const imdbId = typeof data?.imdb_id === 'string' ? data.imdb_id.trim() : '';
+	const imdbId = await getImdbId(mediaType, tmdbId);
 
 	return {
 		tmdbUrl,

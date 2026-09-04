@@ -1,4 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { rm, writeFile } from 'node:fs/promises';
+import { gzipSync } from 'node:zlib';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import {
 	fetchMoreItems,
 	getExternalLinks,
@@ -7,7 +11,8 @@ import {
 } from '$lib/server/tmdb';
 
 const testEnv = vi.hoisted(() => ({
-	TMDB_API_KEY: undefined as string | undefined
+	TMDB_API_KEY: undefined as string | undefined,
+	IMDB_RATINGS_PATH: undefined as string | undefined
 }));
 
 vi.mock('$env/dynamic/private', () => ({ env: testEnv }));
@@ -31,6 +36,8 @@ const tvResult = {
 	vote_count: 250,
 	origin_country: ['CA']
 };
+
+const ratingsPath = join(tmpdir(), `beavarr-imdb-tmdb-${process.pid}.tsv.gz`);
 
 function mockTmdbPages() {
 	vi.mocked(fetch).mockImplementation(async (input) => {
@@ -62,11 +69,13 @@ describe('TMDb client', () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date('2026-06-15T12:00:00.000Z'));
 		testEnv.TMDB_API_KEY = undefined;
+		testEnv.IMDB_RATINGS_PATH = undefined;
 		vi.stubGlobal('fetch', vi.fn());
 	});
 
-	afterAll(() => {
+	afterAll(async () => {
 		vi.useRealTimers();
+		await rm(ratingsPath, { force: true });
 	});
 
 	it('reports whether a TMDb API key is configured', () => {
@@ -93,6 +102,17 @@ describe('TMDb client', () => {
 		expect(discoverUrl.searchParams.get('air_date.lte')).toBe('2026-06-15');
 		expect(discoverUrl.searchParams.has('first_air_date.gte')).toBe(false);
 		expect(discoverUrl.searchParams.has('first_air_date.lte')).toBe(false);
+	});
+
+	it('joins IMDb ratings to TMDb results when the dataset is available', async () => {
+		testEnv.TMDB_API_KEY = 'token';
+		testEnv.IMDB_RATINGS_PATH = ratingsPath;
+		await writeFile(ratingsPath, gzipSync('tconst\taverageRating\tnumVotes\ntt1234567\t8.7\t4567'));
+		mockTmdbPages();
+
+		const items = await fetchMoreItems('acclaimedTV', 'IE', 'month');
+
+		expect(items[0]).toMatchObject({ imdbRating: 8.7, imdbVoteCount: 4567 });
 	});
 
 	it('uses an episode air-date window for the default trending TV feed', async () => {

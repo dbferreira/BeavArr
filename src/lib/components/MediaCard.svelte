@@ -66,6 +66,13 @@
 				<span>{item.voteAverage.toFixed(1)}</span>
 			</div>
 		{/if}
+
+		{#if item.imdbRating !== undefined}
+			<div class="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-bold text-[#f5c518]" title={`IMDb rating: ${item.imdbRating.toFixed(1)}`}>
+				<span class="font-black">IMDb</span>
+				<span>{item.imdbRating.toFixed(1)}</span>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Title & Year Meta -->

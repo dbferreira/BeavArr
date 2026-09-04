@@ -7,6 +7,10 @@ services:
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"
+    depends_on:
+      - imdb-ratings-updater
+    volumes:
+      - imdb-ratings:/app/data:ro
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -14,6 +18,22 @@ services:
       - TMDB_API_KEY=${TMDB_API_KEY:-}
       - OVERSEERR_URL=${OVERSEERR_URL:-}
       - OVERSEERR_API_KEY=${OVERSEERR_API_KEY:-}
+      - IMDB_RATINGS_PATH=/app/data/title.ratings.tsv.gz
     env_file:
       - path: .env
         required: false
+
+  imdb-ratings-updater:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beavarr-imdb-ratings-updater
+    restart: unless-stopped
+    command: ["node", "scripts/update-imdb-ratings.mjs", "--watch"]
+    volumes:
+      - imdb-ratings:/app/data
+    environment:
+      - IMDB_RATINGS_PATH=/app/data/title.ratings.tsv.gz
+
+volumes:
+  imdb-ratings:

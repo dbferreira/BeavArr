@@ -36,7 +36,12 @@ describe('TopBar', () => {
 
 describe('MediaCard', () => {
 	it('renders metadata and selects the item when clicked', async () => {
-		const item = makeMediaItem({ posterPath: 'https://example.com/poster.jpg', mediaType: 'movie' });
+		const item = makeMediaItem({
+			posterPath: 'https://example.com/poster.jpg',
+			mediaType: 'movie',
+			imdbRating: 7.4,
+			imdbVoteCount: 1234
+		});
 		const onSelect = vi.fn();
 		render(MediaCard, { props: { item, onSelect } });
 
@@ -45,6 +50,8 @@ describe('MediaCard', () => {
 		expect(screen.getByText('2024')).not.toBeNull();
 		expect(screen.getByText('Movie')).not.toBeNull();
 		expect(screen.getByText('8.2')).not.toBeNull();
+		expect(screen.getByTitle('IMDb rating: 7.4')).not.toBeNull();
+		expect(screen.getByText('IMDb')).not.toBeNull();
 
 		await fireEvent.click(screen.getByRole('button', { name: `View details for ${item.title}` }));
 		expect(onSelect).toHaveBeenCalledWith(item);
@@ -147,7 +154,12 @@ describe('DetailDrawer', () => {
 	});
 
 	it('renders nothing while closed and loads status and links when opened', async () => {
-		const item = makeMediaItem({ id: 77, genres: ['Thriller', 'Comedy'] });
+		const item = makeMediaItem({
+			id: 77,
+			genres: ['Thriller', 'Comedy'],
+			imdbRating: 7.6,
+			imdbVoteCount: 2345
+		});
 		const onClose = vi.fn();
 		const view = render(DetailDrawer, { props: { item, isOpen: false, onClose } });
 		expect(screen.queryByRole('dialog')).toBeNull();
@@ -159,6 +171,8 @@ describe('DetailDrawer', () => {
 		expect(screen.getByRole('heading', { name: 'Genres' })).not.toBeNull();
 		expect(screen.getByText('Thriller')).not.toBeNull();
 		expect(screen.getByText('Comedy')).not.toBeNull();
+		expect(screen.getByText(/IMDb 7\.6/)).not.toBeNull();
+		expect(screen.getByText(/2,345/)).not.toBeNull();
 		await waitFor(() => expect(screen.getByText('Available in Plex / Jellyfin')).not.toBeNull());
 		expect(screen.getByRole('link', { name: 'TMDb' })).toHaveAttribute('href', 'https://tmdb.test/123');
 

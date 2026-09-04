@@ -11,6 +11,7 @@
 - 🇨🇦 🇬🇧 🇦🇺 🇳🇿 🇿🇦 🇮🇪 🌍 **Non-US Focus:** Uncover regional gems across Canada, UK, Australia, New Zealand, South Africa, Ireland, and global international English cinema.
 - 🌐 **"All Non-US" Aggregate View:** A single filter that surfaces the best content from every supported region at once — no need to click through each country individually.
 - 🗓️ **Release Date Filters:** Slice the same feeds by release window with quick pills for `Any time`, `Last week`, `Last month`, `Last 3 months`, `Last 6 months`, and `Last year`.
+- ⭐ **IMDb Ratings:** Optionally display daily IMDb user ratings and vote counts from IMDb's non-commercial ratings dataset.
 - ⚡ **Overseerr & Jellyseerr Integration:** Real-time library availability check (`In Plex/Jellyfin`) and 1-click requests.
 - 🔗 **External Reference Links:** The details sheet includes quick outbound links to TMDb and, when available, IMDb.
 - 📱 **Mobile & nzb360 Optimized:**
@@ -52,6 +53,9 @@ Edit `.env`:
 # TMDb v3 API Key (from https://www.themoviedb.org/settings/api)
 TMDB_API_KEY=your_tmdb_api_key
 
+# Optional IMDb ratings dataset path
+IMDB_RATINGS_PATH=data/title.ratings.tsv.gz
+
 # Overseerr / Jellyseerr base URL & API Key
 OVERSEERR_URL=http://your-overseerr-host:5055
 OVERSEERR_API_KEY=your_overseerr_api_key
@@ -61,6 +65,8 @@ HOST=0.0.0.0
 ```
 
 > **Note:** If `TMDB_API_KEY` or `OVERSEERR_URL` are omitted, BeavArr operates in demo mode, previewing hand-curated regional titles so you can test the UI instantly.
+
+To enable IMDb ratings during local development, download the dataset with `npm run update:imdb`. The application reloads updated files automatically when their contents change.
 
 ### 2. Run Locally
 
@@ -87,6 +93,8 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 ```bash
 docker compose up -d --build
 ```
+
+Docker Compose runs a companion updater that refreshes IMDb ratings daily in a persistent volume. The application reloads the file automatically when it changes.
 
 Access BeavArr at `http://localhost:3000`.
 

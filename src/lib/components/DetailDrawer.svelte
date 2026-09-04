@@ -215,6 +215,12 @@
 									<span class="text-slate-400 text-[11px] font-normal">({item.voteCount.toLocaleString()})</span>
 								</div>
 							{/if}
+							{#if item.imdbRating !== undefined}
+								<span>•</span>
+								<span class="font-semibold tracking-wider text-[#f5c518]">
+									IMDb {item.imdbRating.toFixed(1)}{#if item.imdbVoteCount !== undefined} ({item.imdbVoteCount.toLocaleString()}){/if}
+								</span>
+							{/if}
 						</div>
 					</div>
 				</div>

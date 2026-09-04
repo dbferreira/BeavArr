@@ -30,6 +30,10 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy compiled SvelteKit bundle from builder
 COPY --from=builder /app/build ./build
+COPY scripts ./scripts
+
+# The IMDb updater shares this directory through a Docker volume.
+RUN mkdir -p /app/data && chown node:node /app/data
 
 # Run as non-root node user for security
 USER node

@@ -175,6 +175,9 @@
 		<p class="mt-1 text-[11px] text-slate-400">
 			This product uses the TMDb API but is not endorsed or certified by TMDb.
 		</p>
+		<p class="mt-1 text-[11px] text-slate-400">
+			IMDb ratings provided by IMDb. Used with permission.
+		</p>
 	</footer>
 
 	<!-- Detail Drawer Modal (Bottom Sheet) -->

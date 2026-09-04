@@ -22,6 +22,8 @@ export interface MediaItem {
 	voteCount: number;
 	originCountry: string[];
 	genres?: string[];
+	imdbRating?: number;
+	imdbVoteCount?: number;
 	certification?: string | null;
 	overseerrStatus?: OverseerrMediaStatus;
 }

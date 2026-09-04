@@ -29,6 +29,7 @@ describe('discovery page', () => {
 		expect(screen.getByRole('heading', { name: 'Popular Feature Films' })).not.toBeNull();
 		expect(screen.getByRole('heading', { name: 'Critically Acclaimed Films' })).not.toBeNull();
 		expect(screen.getByText('Designed for nzb360 WebView • Powered by TMDb & Overseerr')).not.toBeNull();
+		expect(screen.getByText('IMDb ratings provided by IMDb. Used with permission.')).not.toBeNull();
 		expect(screen.queryByRole('complementary', { name: 'Configuration Notice' })).toBeNull();
 	});
 
