@@ -21,6 +21,7 @@ export interface MediaItem {
 	voteAverage: number;
 	voteCount: number;
 	originCountry: string[];
+	genres?: string[];
 	certification?: string | null;
 	overseerrStatus?: OverseerrMediaStatus;
 }

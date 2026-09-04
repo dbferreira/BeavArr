@@ -26,6 +26,7 @@ const tvResult = {
 	poster_path: '/poster.jpg',
 	backdrop_path: '/backdrop.jpg',
 	first_air_date: '2018-04-01',
+	genre_ids: [35, 10751, 999999],
 	vote_average: 8.26,
 	vote_count: 250,
 	origin_country: ['CA']
@@ -85,6 +86,7 @@ describe('TMDb client', () => {
 			title: 'Running Series',
 			releaseDate: '2018-04-01',
 			releaseYear: '2018',
+			genres: ['Comedy', 'Family'],
 			certification: 'TV-14'
 		});
 		expect(discoverUrl.searchParams.get('air_date.gte')).toBe('2026-05-15');

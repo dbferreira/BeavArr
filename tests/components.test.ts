@@ -147,7 +147,7 @@ describe('DetailDrawer', () => {
 	});
 
 	it('renders nothing while closed and loads status and links when opened', async () => {
-		const item = makeMediaItem({ id: 77 });
+		const item = makeMediaItem({ id: 77, genres: ['Thriller', 'Comedy'] });
 		const onClose = vi.fn();
 		const view = render(DetailDrawer, { props: { item, isOpen: false, onClose } });
 		expect(screen.queryByRole('dialog')).toBeNull();
@@ -156,6 +156,9 @@ describe('DetailDrawer', () => {
 		await waitFor(() => expect(screen.getByRole('dialog')).not.toBeNull());
 		expect(screen.getByRole('heading', { name: item.title })).not.toBeNull();
 		expect(screen.getByRole('button', { name: 'Close details' })).not.toBeNull();
+		expect(screen.getByRole('heading', { name: 'Genres' })).not.toBeNull();
+		expect(screen.getByText('Thriller')).not.toBeNull();
+		expect(screen.getByText('Comedy')).not.toBeNull();
 		await waitFor(() => expect(screen.getByText('Available in Plex / Jellyfin')).not.toBeNull());
 		expect(screen.getByRole('link', { name: 'TMDb' })).toHaveAttribute('href', 'https://tmdb.test/123');
 

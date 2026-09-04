@@ -219,6 +219,19 @@
 					</div>
 				</div>
 
+				{#if item.genres && item.genres.length > 0}
+					<div class="mt-3" aria-label="Genres">
+						<h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-2">Genres</h3>
+						<div class="flex flex-wrap gap-1.5">
+							{#each item.genres as genre}
+								<span class="px-2 py-1 rounded-lg bg-white/[0.06] border border-white/[0.1] text-xs font-medium text-slate-300">
+									{genre}
+								</span>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
 				<!-- Status Badge Indicator -->
 				<div class="my-3 flex items-center gap-2">
 					{#if isCheckingStatus}
