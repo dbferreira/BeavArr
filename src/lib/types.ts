@@ -1,6 +1,6 @@
 export type CountryCode = 'ALL' | 'CA' | 'GB' | 'AU' | 'NZ' | 'ZA' | 'IE' | 'ROW';
 
-export type DateRangeFilter = 'any' | 'week' | 'month' | 'six_months';
+export type DateRangeFilter = 'any' | 'week' | 'month' | 'three_months' | 'six_months' | 'year';
 
 export interface CountryInfo {
 	code: CountryCode;
@@ -51,6 +51,11 @@ export interface DiscoverResponse {
 	acclaimedMovies: MediaItem[];
 	tmdbConfigured: boolean;
 	overseerrConfigured: boolean;
+}
+
+export interface ExternalLinks {
+	tmdbUrl: string;
+	imdbUrl: string | null;
 }
 
 export interface RequestPayload {

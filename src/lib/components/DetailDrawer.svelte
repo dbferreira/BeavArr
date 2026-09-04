@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { MediaItem } from '$lib/types';
+	import type { ExternalLinks, MediaItem } from '$lib/types';
 	import { OverseerrMediaStatus } from '$lib/types';
-	import { Star, X, Check, Clock, AlertCircle, Loader2, Send } from 'lucide-svelte';
+	import { Star, X, Check, Clock, AlertCircle, Loader2, Send, ExternalLink } from 'lucide-svelte';
 
 	interface Props {
 		item: MediaItem | null;
@@ -19,6 +19,8 @@
 	let isConfigured = $state(true);
 	let backdropFailed = $state(false);
 	let posterFailed = $state(false);
+	let externalLinks = $state<ExternalLinks | null>(null);
+	let isLoadingLinks = $state(false);
 
 	// Fetch Overseerr status whenever a new item is opened
 	$effect(() => {
@@ -26,10 +28,34 @@
 			backdropFailed = false;
 			posterFailed = false;
 			checkOverseerrStatus(item);
+			loadExternalLinks(item);
 			submitError = null;
 			submitSuccess = null;
 		}
 	});
+
+	async function loadExternalLinks(media: MediaItem) {
+		isLoadingLinks = true;
+		try {
+			const res = await fetch(`/api/links?mediaType=${media.mediaType}&tmdbId=${media.id}`);
+			if (res.ok) {
+				externalLinks = await res.json();
+			} else {
+				externalLinks = {
+					tmdbUrl: `https://www.themoviedb.org/${media.mediaType}/${media.id}`,
+					imdbUrl: null
+				};
+			}
+		} catch (err) {
+			console.warn('External links fetch failed:', err);
+			externalLinks = {
+				tmdbUrl: `https://www.themoviedb.org/${media.mediaType}/${media.id}`,
+				imdbUrl: null
+			};
+		} finally {
+			isLoadingLinks = false;
+		}
+	}
 
 	async function checkOverseerrStatus(media: MediaItem) {
 		isCheckingStatus = true;
@@ -226,6 +252,44 @@
 						{item.overview}
 					</p>
 				</div>
+
+				<!-- External Reference Links -->
+				{#if externalLinks || isLoadingLinks}
+					<div class="mt-4">
+						<h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-2">
+							Read more
+						</h3>
+						<div class="flex flex-wrap gap-2">
+							{#if externalLinks}
+								<a
+									href={externalLinks.tmdbUrl}
+									target="_blank"
+									rel="noreferrer"
+									class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.06] border border-white/[0.1] text-xs font-semibold text-slate-200 hover:bg-white/[0.1] transition-colors"
+								>
+									<ExternalLink class="w-3.5 h-3.5" />
+									<span>TMDb</span>
+								</a>
+								{#if externalLinks.imdbUrl}
+									<a
+										href={externalLinks.imdbUrl}
+										target="_blank"
+										rel="noreferrer"
+										class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.06] border border-white/[0.1] text-xs font-semibold text-slate-200 hover:bg-white/[0.1] transition-colors"
+									>
+										<ExternalLink class="w-3.5 h-3.5" />
+										<span>IMDb</span>
+									</a>
+								{/if}
+							{:else}
+								<div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-slate-400">
+									<Loader2 class="w-3.5 h-3.5 animate-spin" />
+									<span>Loading links...</span>
+								</div>
+							{/if}
+						</div>
+					</div>
+				{/if}
 
 				<!-- Error / Success Feedback Notifications -->
 				{#if submitError}

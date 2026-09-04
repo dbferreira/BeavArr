@@ -20,7 +20,7 @@ const VALID_COUNTRIES: Record<CountryCode, { name: string; flag: string }> = {
 	ROW: { name: 'Rest of World', flag: '🌍' }
 };
 
-const VALID_DATE_RANGES: DateRangeFilter[] = ['any', 'week', 'month', 'six_months'];
+const VALID_DATE_RANGES: DateRangeFilter[] = ['any', 'week', 'month', 'three_months', 'six_months', 'year'];
 
 export const load: PageServerLoad = async ({ url }): Promise<DiscoverResponse> => {
 	const requestedCountry = url.searchParams.get('country')?.toUpperCase() as CountryCode;

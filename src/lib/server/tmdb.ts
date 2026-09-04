@@ -48,8 +48,12 @@ function getDateRangeStart(dateRange: DateRangeFilter): string | null {
 			return getDateDaysAgo(7);
 		case 'month':
 			return getDateMonthsAgo(1);
+		case 'three_months':
+			return getDateMonthsAgo(3);
 		case 'six_months':
 			return getDateMonthsAgo(6);
+		case 'year':
+			return getDateYearsAgo(1);
 		case 'any':
 		default:
 			return null;
@@ -487,6 +491,25 @@ export async function getCriticallyAcclaimedMovies(country: CountryCode, dateRan
 
 	tmdbCache.set(cacheKey, items);
 	return items;
+}
+
+/**
+ * Fetch external links for a title (TMDb always, IMDb when available).
+ */
+export async function getExternalLinks(mediaType: 'movie' | 'tv', tmdbId: number): Promise<{ tmdbUrl: string; imdbUrl: string | null }> {
+	const tmdbUrl = `https://www.themoviedb.org/${mediaType}/${tmdbId}`;
+	const apiKey = env.TMDB_API_KEY?.trim();
+	if (!apiKey) {
+		return { tmdbUrl, imdbUrl: null };
+	}
+
+	const data = await fetchTmdbDetail(`/${mediaType}/${tmdbId}/external_ids`);
+	const imdbId = typeof data?.imdb_id === 'string' ? data.imdb_id.trim() : '';
+
+	return {
+		tmdbUrl,
+		imdbUrl: imdbId ? `https://www.imdb.com/title/${imdbId}/` : null
+	};
 }
 
 export function isTmdbConfigured(): boolean {

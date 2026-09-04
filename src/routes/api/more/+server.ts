@@ -5,7 +5,7 @@ import type { CountryCode, DateRangeFilter } from '$lib/types';
 
 const VALID_CATEGORIES: Category[] = ['trendingTV', 'acclaimedTV', 'popularMovies', 'acclaimedMovies'];
 const VALID_COUNTRIES: CountryCode[] = ['ALL', 'CA', 'GB', 'AU', 'NZ', 'ZA', 'IE', 'ROW'];
-const VALID_DATE_RANGES: DateRangeFilter[] = ['any', 'week', 'month', 'six_months'];
+const VALID_DATE_RANGES: DateRangeFilter[] = ['any', 'week', 'month', 'three_months', 'six_months', 'year'];
 
 export const GET: RequestHandler = async ({ url }) => {
 	const category = url.searchParams.get('category') as Category;

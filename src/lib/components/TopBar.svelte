@@ -25,7 +25,9 @@
 		{ value: 'any', label: 'Any time' },
 		{ value: 'week', label: 'Last week' },
 		{ value: 'month', label: 'Last month' },
-		{ value: 'six_months', label: 'Last 6 months' }
+		{ value: 'three_months', label: 'Last 3 months' },
+		{ value: 'six_months', label: 'Last 6 months' },
+		{ value: 'year', label: 'Last year' }
 	];
 </script>
 

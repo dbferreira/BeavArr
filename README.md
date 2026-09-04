@@ -10,8 +10,9 @@
 
 - 🇨🇦 🇬🇧 🇦🇺 🇳🇿 🇿🇦 🇮🇪 🌍 **Non-US Focus:** Uncover regional gems across Canada, UK, Australia, New Zealand, South Africa, Ireland, and global international English cinema.
 - 🌐 **"All Non-US" Aggregate View:** A single filter that surfaces the best content from every supported region at once — no need to click through each country individually.
-- 🗓️ **Release Date Filters:** Slice the same feeds by release window with quick pills for `Any time`, `Last week`, `Last month`, and `Last 6 months`.
+- 🗓️ **Release Date Filters:** Slice the same feeds by release window with quick pills for `Any time`, `Last week`, `Last month`, `Last 3 months`, `Last 6 months`, and `Last year`.
 - ⚡ **Overseerr & Jellyseerr Integration:** Real-time library availability check (`In Plex/Jellyfin`) and 1-click requests.
+- 🔗 **External Reference Links:** The details sheet includes quick outbound links to TMDb and, when available, IMDb.
 - 📱 **Mobile & nzb360 Optimized:**
   - Deep AMOLED Black (`#0a0b0d`) theme.
   - Horizontal scroll snapping carousels (`overflow-x-auto snap-x snap-mandatory`).
